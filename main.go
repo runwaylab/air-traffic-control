@@ -48,11 +48,11 @@ func main() {
 	// Recovery middleware recovers from any panics and writes a 500 if there was one.
 	router.Use(gin.Recovery())
 
-	router.GET("/commands/:org/:repo", GetRepoCommands)
-	router.GET("/commands/:org/:repo/:commandId", GetSingleCommand)
-	router.POST("/commands", CreateCommand)
-	router.PUT("/commands/:org/:repo/:commandId", UpdateCommand)
-	router.DELETE("/commands/:org/:repo/:commandId", DeleteCommand)
+	router.GET("/:org/:repo/commands", GetRepoCommands)
+	router.GET("/:org/:repo/commands/:commandId", GetSingleCommand)
+	router.POST("/:org/:repo/commands", CreateCommand)
+	router.PUT("/:org/:repo/commands/:commandId", UpdateCommand)
+	router.DELETE("/:org/:repo/commands/:commandId", DeleteCommand)
 
 	// Run the router
 	router.Run()
@@ -108,6 +108,11 @@ func GetSingleCommand(c *gin.Context) {
 func CreateCommand(c *gin.Context) {
 	id := uuid.New().String()
 
+	org := c.Param("org")
+	org = strings.ReplaceAll(org, "/", "")
+	repo := c.Param("repo")
+	repo = strings.ReplaceAll(repo, "/", "")
+
 	var newCommand Command
 	err := c.BindJSON(&newCommand)
 	if err != nil {
@@ -115,11 +120,19 @@ func CreateCommand(c *gin.Context) {
 		panic(msg)
 	}
 
-	// add id to newCommand
+	// add values to the new command
 	newCommand.Id = id
+	newCommand.Organization = org
+	newCommand.Repository = repo
+
+	// check required params
+	if newCommand.Organization == "" || newCommand.Repository == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "organization and repository are required params"})
+		return
+	}
 
 	// Check all required inputs
-	if newCommand.Organization == "" || newCommand.Repository == "" || newCommand.Name == "" || newCommand.Data == "" {
+	if newCommand.Name == "" || newCommand.Data == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "organization, repository, name, and data are required"})
 		return
 	}
