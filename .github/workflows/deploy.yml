@@ -28,14 +28,11 @@ jobs:
           go-version: ${{ steps.go-version.outputs.version }}
 
       - name: go build
-        run: |
-          mkdir -p build
-          go build
-          mv ${{ env.APP_NAME }} build
+        run: go build
 
       - name: deploy
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.APP_NAME }}
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
-          package: ./build/
+          package: .
