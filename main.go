@@ -28,13 +28,13 @@ type Command struct {
 }
 
 type CommandResponse struct {
-	Id           string
-	Organization string
-	Repository   string
-	Name         string
-	Data         map[string]interface{}
-	Created_at   string
-	Updated_at   string
+	Id           string                 `json:"id"`
+	Organization string                 `json:"organization"`
+	Repository   string                 `json:"repository"`
+	Name         string                 `json:"name"`
+	Data         map[string]interface{} `json:"data"`
+	Created_at   string                 `json:"created_at"`
+	Updated_at   string                 `json:"updated_at"`
 }
 
 func main() {
