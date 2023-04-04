@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -72,16 +71,12 @@ func GetCommands(c *gin.Context) {
 }
 
 func GetSingleCommand(c *gin.Context) {
-	productId := c.Param("productId")
-	productId = strings.ReplaceAll(productId, "/", "")
-	productIdInt, err := strconv.Atoi(productId)
-	if err != nil {
-		log.Fatal("(GetSingleCommand) strconv.Atoi", err)
-	}
+	commandId := c.Param("commandId")
+	commandId = strings.ReplaceAll(commandId, "/", "")
 
 	var command Command
 	query := `SELECT * FROM commands WHERE id = ?`
-	err = db.QueryRow(query, productIdInt).Scan(&command.Id, &command.Organization, &command.Repository, &command.Name)
+	err := db.QueryRow(query, commandId).Scan(&command.Id, &command.Organization, &command.Repository, &command.Name)
 	if err != nil {
 		log.Fatal("(GetSingleCommand) db.Exec", err)
 	}
