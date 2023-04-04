@@ -76,7 +76,7 @@ func GetSingleCommand(c *gin.Context) {
 
 	var command Command
 	query := `SELECT * FROM commands WHERE id = ?`
-	err := db.QueryRow(query, commandId).Scan(&command.Id, &command.Organization, &command.Repository, &command.Name)
+	err := db.QueryRow(query, commandId).Scan(&command.Id, &command.Organization, &command.Repository, &command.Name, &command.Data, &command.Created_at, &command.Updated_at)
 	if err != nil {
 		log.Fatal("(GetSingleCommand) db.Exec", err)
 	}
