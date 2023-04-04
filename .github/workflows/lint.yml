@@ -1,0 +1,31 @@
+name: lint
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: fetch go version
+        id: go-version
+        run: |
+          version=$(cat .go-version)
+          echo "version=${version}" >> $GITHUB_OUTPUT
+
+      - uses: actions/setup-go@v4.0.0
+        with:
+          go-version: ${{ steps.go-version.outputs.version }}
+
+      - name: lint
+        run: bundle exec rubocop -c .rubocop.yml src/ spec/
