@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -43,6 +44,10 @@ func main() {
 
 	// Build router & define routes
 	router := gin.Default()
+
+	// Recovery middleware recovers from any panics and writes a 500 if there was one.
+	router.Use(gin.Recovery())
+
 	router.GET("/commands/:org/:repo", GetRepoCommands)
 	router.GET("/commands/:org/:repo/:commandId", GetSingleCommand)
 	router.POST("/commands", CreateCommand)
@@ -63,7 +68,8 @@ func GetRepoCommands(c *gin.Context) {
 	res, err := db.Query(query, org, repo)
 	defer res.Close()
 	if err != nil {
-		log.Fatal("(GetCommands) db.Query", err)
+		msg, _ := fmt.Printf("(GetCommands) db.Query %s", err)
+		panic(msg)
 	}
 
 	commands := []Command{}
@@ -71,7 +77,8 @@ func GetRepoCommands(c *gin.Context) {
 		var command Command
 		err := res.Scan(&command.Id, &command.Organization, &command.Repository, &command.Name, &command.Data, &command.Created_at, &command.Updated_at)
 		if err != nil {
-			log.Fatal("(GetCommands) res.Scan", err)
+			msg, _ := fmt.Printf("(GetCommands) res.Scan %s", err)
+			panic(msg)
 		}
 		commands = append(commands, command)
 	}
@@ -91,7 +98,8 @@ func GetSingleCommand(c *gin.Context) {
 	query := `SELECT * FROM commands WHERE id = ? AND organization = ? AND repository = ?`
 	err := db.QueryRow(query, commandId, org, repo).Scan(&command.Id, &command.Organization, &command.Repository, &command.Name, &command.Data, &command.Created_at, &command.Updated_at)
 	if err != nil {
-		log.Fatal("(GetSingleCommand) db.Exec", err)
+		msg, _ := fmt.Printf("(GetSingleCommand) db.Exec %s", err)
+		panic(msg)
 	}
 
 	c.JSON(http.StatusOK, command)
@@ -103,19 +111,22 @@ func CreateCommand(c *gin.Context) {
 	var newCommand Command
 	err := c.BindJSON(&newCommand)
 	if err != nil {
-		log.Fatal("(CreateCommand) c.BindJSON", err)
+		msg, _ := fmt.Printf("(CreateCommand) c.BindJSON %s", err)
+		panic(msg)
 	}
 
 	query := `INSERT INTO commands (id, organization, repository, name) VALUES (?, ?, ?, ?)`
 	res, err := db.Exec(query, id, newCommand.Organization, newCommand.Repository, newCommand.Name)
 	if err != nil {
-		log.Fatal("(CreateCommand) db.Exec", err)
+		msg, _ := fmt.Printf("(CreateCommand) db.Exec %s", err)
+		panic(msg)
 	}
 
 	_, err = res.LastInsertId()
 
 	if err != nil {
-		log.Fatal("(CreateCommand) res.LastInsertId", err)
+		msg, _ := fmt.Printf("(CreateCommand) res.LastInsertId %s", err)
+		panic(msg)
 	}
 
 	c.JSON(http.StatusOK, newCommand)
@@ -125,7 +136,8 @@ func UpdateCommand(c *gin.Context) {
 	var updates Command
 	err := c.BindJSON(&updates)
 	if err != nil {
-		log.Fatal("(UpdateCommand) c.BindJSON", err)
+		msg, _ := fmt.Printf("(UpdateCommand) c.BindJSON %s", err)
+		panic(msg)
 	}
 
 	commandId := c.Param("commandId")
@@ -134,7 +146,8 @@ func UpdateCommand(c *gin.Context) {
 	query := `UPDATE commands SET name = ?, repository = ? WHERE id = ?`
 	_, err = db.Exec(query, updates.Name, updates.Repository, commandId)
 	if err != nil {
-		log.Fatal("(UpdateCommand) db.Exec", err)
+		msg, _ := fmt.Printf("(UpdateCommand) db.Exec %s", err)
+		panic(msg)
 	}
 
 	c.Status(http.StatusOK)
@@ -148,7 +161,8 @@ func DeleteCommand(c *gin.Context) {
 	query := `DELETE FROM commands WHERE id = ?`
 	_, err := db.Exec(query, commandId)
 	if err != nil {
-		log.Fatal("(DeleteCommand) db.Exec", err)
+		msg, _ := fmt.Printf("(DeleteCommand) db.Exec %s", err)
+		panic(msg)
 	}
 
 	c.Status(http.StatusOK)
