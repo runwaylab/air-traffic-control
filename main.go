@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/runwayapp/air-traffic-control/internal/middlewares"
+	token "github.com/runwayapp/air-traffic-control/internal/utils"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
@@ -39,6 +40,10 @@ type CommandResponse struct {
 	Updated_at   string                 `json:"updated_at"`
 }
 
+type AuthRequest struct {
+	Login string `json:"login"`
+}
+
 func main() {
 	var err error
 	// Load in the `.env` file in development
@@ -63,15 +68,40 @@ func main() {
 
 	protected := router.Group("/")
 	protected.Use(middlewares.JwtAuthMiddleware())
-
 	protected.GET("/:org/:repo/commands", GetRepoCommands)
 	protected.GET("/:org/:repo/commands/:commandId", GetSingleCommand)
 	protected.POST("/:org/:repo/commands", CreateCommand)
 	protected.PUT("/:org/:repo/commands/:commandId", UpdateCommand)
 	protected.DELETE("/:org/:repo/commands/:commandId", DeleteCommand)
 
+	unprotected := router.Group("/")
+	unprotected.POST("/auth", Auth)
+
 	// Run the router
 	router.Run()
+}
+
+func Auth(c *gin.Context) {
+	var authRequest AuthRequest
+	err := c.BindJSON(&authRequest)
+	if err != nil {
+		msg, _ := fmt.Printf("(Auth) c.BindJSON %s", err)
+		panic(msg)
+	}
+
+	if authRequest.Login == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "login is required"})
+		return
+	}
+
+	token, err := token.GenerateToken(authRequest.Login)
+
+	if err != nil {
+		msg, _ := fmt.Printf("(Auth) token.GenerateToken %s", err)
+		panic(msg)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "ok", "token": token})
 }
 
 func GetRepoCommands(c *gin.Context) {
