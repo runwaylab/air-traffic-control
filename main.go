@@ -25,10 +25,13 @@ type Command struct {
 }
 
 func main() {
-	// Load in the `.env` file
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("failed to load env", err)
+	var err error
+	// Load in the `.env` file in development
+	if os.Getenv("ENV") != "production" {
+		err = godotenv.Load()
+		if err != nil {
+			log.Fatal("failed to load env", err)
+		}
 	}
 
 	// Open a connection to the database
