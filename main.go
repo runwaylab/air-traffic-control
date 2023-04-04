@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 )
 
@@ -97,6 +98,8 @@ func GetSingleCommand(c *gin.Context) {
 }
 
 func CreateCommand(c *gin.Context) {
+	id := uuid.New().String()
+
 	var newCommand Command
 	err := c.BindJSON(&newCommand)
 	if err != nil {
@@ -104,7 +107,7 @@ func CreateCommand(c *gin.Context) {
 	}
 
 	query := `INSERT INTO commands (id, organization, repository, name) VALUES (?, ?, ?, ?)`
-	res, err := db.Exec(query, newCommand.Id, newCommand.Organization, newCommand.Repository, newCommand.Name)
+	res, err := db.Exec(query, id, newCommand.Organization, newCommand.Repository, newCommand.Name)
 	if err != nil {
 		log.Fatal("(CreateCommand) db.Exec", err)
 	}
