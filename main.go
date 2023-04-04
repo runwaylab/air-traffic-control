@@ -16,13 +16,13 @@ import (
 var db *sql.DB
 
 type Command struct {
-	id           string
-	organization string
-	repository   string
-	name         string
-	data         string
-	created_at   string
-	updated_at   string
+	Id           string
+	Organization string
+	Repository   string
+	Name         string
+	Data         string
+	Created_at   string
+	Updated_at   string
 }
 
 func main() {
@@ -61,7 +61,7 @@ func GetCommands(c *gin.Context) {
 	commands := []Command{}
 	for res.Next() {
 		var command Command
-		err := res.Scan(&command.id, &command.organization, &command.repository, &command.name)
+		err := res.Scan(&command.Id, &command.Organization, &command.Repository, &command.Name, &command.Data, &command.Created_at, &command.Updated_at)
 		if err != nil {
 			log.Fatal("(GetCommands) res.Scan", err)
 		}
@@ -81,7 +81,7 @@ func GetSingleCommand(c *gin.Context) {
 
 	var command Command
 	query := `SELECT * FROM commands WHERE id = ?`
-	err = db.QueryRow(query, productIdInt).Scan(&command.id, &command.organization, &command.repository, &command.name)
+	err = db.QueryRow(query, productIdInt).Scan(&command.Id, &command.Organization, &command.Repository, &command.Name)
 	if err != nil {
 		log.Fatal("(GetSingleCommand) db.Exec", err)
 	}
@@ -97,7 +97,7 @@ func CreateCommand(c *gin.Context) {
 	}
 
 	query := `INSERT INTO commands (id, organization, repository, name) VALUES (?, ?, ?, ?)`
-	res, err := db.Exec(query, newCommand.id, newCommand.organization, newCommand.repository, newCommand.name)
+	res, err := db.Exec(query, newCommand.Id, newCommand.Organization, newCommand.Repository, newCommand.Name)
 	if err != nil {
 		log.Fatal("(CreateCommand) db.Exec", err)
 	}
@@ -122,7 +122,7 @@ func UpdateCommand(c *gin.Context) {
 	commandId = strings.ReplaceAll(commandId, "/", "")
 
 	query := `UPDATE commands SET name = ?, repository = ? WHERE id = ?`
-	_, err = db.Exec(query, updates.name, updates.repository, commandId)
+	_, err = db.Exec(query, updates.Name, updates.Repository, commandId)
 	if err != nil {
 		log.Fatal("(UpdateCommand) db.Exec", err)
 	}
