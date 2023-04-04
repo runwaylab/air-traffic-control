@@ -78,6 +78,13 @@ func main() {
 	apiKeyProtection.Use(middlewares.ApiKeyAuthMiddleware())
 	apiKeyProtection.POST("/auth", Auth)
 
+	// add ping endpoint
+	router.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "pong",
+		})
+	})
+
 	// Run the router
 	router.Run()
 }
