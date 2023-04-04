@@ -25,8 +25,8 @@ CREATE TABLE commands (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO commands(id, organization, repository, name, data) VALUES
-('5ECFDB3A-C229-4982-B5B0-5CC87B8A616A', 'runway', 'test-flight', 'deploy command', '{"name": "deploy command", "description": "Deploy the application", "command": ".deploy"}'),
-('8FF93DAA-66DC-4398-9AD7-93A480AC8AD7', 'runway', 'test-flight', 'linter', '{"name": "linter", "description": "it lints things", "command": ".lint"}'),
-('58890287-9FF4-4FFA-B671-05AC33B9372E', 'runway', 'fake-repo', 'help', '{"name": "help", "description": "a general help command", "command": ".help"}'),
-('5A253C4D-AE3F-4B8D-AABD-F418C34F1D1F', 'monalisa', 'cats', 'help', '{"name": "help", "description": "a general help command", "command": ".help"}'),
-('E497B87C-7BC7-4565-8477-54C8F9441CD0', 'lisamona', 'dogs', 'help', '{"name": "help", "description": "a general help command", "command": ".help"}');
+('5ecfdb3a-c229-4982-b5b0-5cc87b8a616a', 'runway', 'test-flight', 'deploy command', '{"name": "deploy command", "description": "Deploy the application", "command": ".deploy"}'),
+('8ff93daa-66dc-4398-9ad7-93a480ac8ad7', 'runway', 'test-flight', 'linter', '{"name": "linter", "description": "it lints things", "command": ".lint"}'),
+('58890287-9ff4-4ffa-b671-05ac33b9372e', 'runway', 'fake-repo', 'help', '{"name": "help", "description": "a general help command", "command": ".help"}'),
+('5a253c4d-ae3f-4b8d-aabd-f418c34f1d1f', 'monalisa', 'cats', 'help', '{"name": "help", "description": "a general help command", "command": ".help"}'),
+('e497b87c-7bc7-4565-8477-54c8f9441cd0', 'lisamona', 'dogs', 'help', '{"name": "help", "description": "a general help command", "command": ".help"}');
