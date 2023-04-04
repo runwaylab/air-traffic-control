@@ -123,6 +123,7 @@ func GetSingleCommand(c *gin.Context) {
 	commandId := c.Param("commandId")
 	commandId = strings.ReplaceAll(commandId, "/", "")
 
+	var commandResponse CommandResponse
 	var command Command
 	query := `SELECT * FROM commands WHERE id = ? AND organization = ? AND repository = ?`
 	err := db.QueryRow(query, commandId, org, repo).Scan(&command.Id, &command.Organization, &command.Repository, &command.Name, &command.Data, &command.Created_at, &command.Updated_at)
@@ -131,7 +132,23 @@ func GetSingleCommand(c *gin.Context) {
 		panic(msg)
 	}
 
-	c.JSON(http.StatusOK, command)
+	// ensure the data is valid json before appending
+	var data map[string]interface{}
+	err = json.Unmarshal([]byte(command.Data), &data)
+	if err != nil {
+		msg, _ := fmt.Printf("(GetCommands) json.Unmarshal %s", err)
+		panic(msg)
+	}
+
+	commandResponse.Id = command.Id
+	commandResponse.Organization = command.Organization
+	commandResponse.Repository = command.Repository
+	commandResponse.Name = command.Name
+	commandResponse.Created_at = command.Created_at
+	commandResponse.Updated_at = command.Updated_at
+	commandResponse.Data = data
+
+	c.JSON(http.StatusOK, commandResponse)
 }
 
 func CreateCommand(c *gin.Context) {
@@ -180,7 +197,25 @@ func CreateCommand(c *gin.Context) {
 		panic(msg)
 	}
 
-	c.JSON(http.StatusOK, newCommand)
+	var commandResponse CommandResponse
+
+	// ensure the data is valid json before appending
+	var data map[string]interface{}
+	err = json.Unmarshal([]byte(newCommand.Data), &data)
+	if err != nil {
+		msg, _ := fmt.Printf("(GetCommands) json.Unmarshal %s", err)
+		panic(msg)
+	}
+
+	commandResponse.Id = newCommand.Id
+	commandResponse.Organization = newCommand.Organization
+	commandResponse.Repository = newCommand.Repository
+	commandResponse.Name = newCommand.Name
+	commandResponse.Created_at = newCommand.Created_at
+	commandResponse.Updated_at = newCommand.Updated_at
+	commandResponse.Data = data
+
+	c.JSON(http.StatusOK, commandResponse)
 }
 
 func UpdateCommand(c *gin.Context) {
