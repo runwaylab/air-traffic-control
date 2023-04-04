@@ -30,3 +30,15 @@ INSERT INTO commands(id, organization, repository, name, data) VALUES
 ('58890287-9ff4-4ffa-b671-05ac33b9372e', 'runway', 'fake-repo', 'help', '{"name": "help", "description": "a general help command", "command": ".help"}'),
 ('5a253c4d-ae3f-4b8d-aabd-f418c34f1d1f', 'monalisa', 'cats', 'help', '{"name": "help", "description": "a general help command", "command": ".help"}'),
 ('e497b87c-7bc7-4565-8477-54c8f9441cd0', 'lisamona', 'dogs', 'help', '{"name": "help", "description": "a general help command", "command": ".help"}');
+
+# the users table
+CREATE TABLE users (
+    login VARCHAR(255) NOT NULL PRIMARY KEY,
+    runwaytoken VARCHAR(255),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO organizations(login) VALUES
+('maverick'),
+('goose');
