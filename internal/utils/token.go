@@ -30,7 +30,7 @@ func GenerateToken(login string) (string, error) {
 
 func TokenValid(c *gin.Context) error {
 	// If we're in development, skip the token check
-	if os.Getenv("ENV") == "development" {
+	if os.Getenv("ENV") == "development" && os.Getenv("SKIP_JWT_CHECK") == "true" {
 		return nil
 	}
 
@@ -68,12 +68,12 @@ func ExtractTokenID(c *gin.Context) (string, error) {
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if ok && token.Valid {
-		login := claims["login"]
+		login := claims["login"].(string)
 		return login, nil
 	}
-	return 0, nil
+	return "", nil
 }
