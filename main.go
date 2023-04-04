@@ -52,7 +52,7 @@ func main() {
 	router.GET("/commands/:org/:repo/:commandId", GetSingleCommand)
 	router.POST("/commands", CreateCommand)
 	router.PUT("/commands/:commandId", UpdateCommand)
-	router.DELETE("/commands/:commandId", DeleteCommand)
+	router.DELETE("/commands/:org/:repo/:commandId", DeleteCommand)
 
 	// Run the router
 	router.Run()
@@ -154,15 +154,42 @@ func UpdateCommand(c *gin.Context) {
 }
 
 func DeleteCommand(c *gin.Context) {
+	org := c.Param("org")
+	org = strings.ReplaceAll(org, "/", "")
+	repo := c.Param("repo")
+	repo = strings.ReplaceAll(repo, "/", "")
 	commandId := c.Param("commandId")
-
 	commandId = strings.ReplaceAll(commandId, "/", "")
 
-	query := `DELETE FROM commands WHERE id = ?`
-	_, err := db.Exec(query, commandId)
+	// if an org or repo is not provided, return an error
+	if org == "" || repo == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "org and repo are required"})
+		return
+	}
+
+	// if a commandId is not provided, return an error
+	if commandId == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "commandId is required"})
+		return
+	}
+
+	query := `DELETE FROM commands WHERE id = ? AND organization = ? AND repository = ?`
+	result, err := db.Exec(query, commandId, org, repo)
 	if err != nil {
 		msg, _ := fmt.Printf("(DeleteCommand) db.Exec %s", err)
 		panic(msg)
+	}
+
+	// if no rows were affected, return an error
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		msg, _ := fmt.Printf("(DeleteCommand) result.RowsAffected %s", err)
+		panic(msg)
+	}
+
+	if rowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "command not found"})
+		return
 	}
 
 	c.Status(http.StatusOK)
