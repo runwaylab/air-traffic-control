@@ -51,7 +51,7 @@ func main() {
 	router.GET("/commands/:org/:repo", GetRepoCommands)
 	router.GET("/commands/:org/:repo/:commandId", GetSingleCommand)
 	router.POST("/commands", CreateCommand)
-	router.PUT("/commands/:commandId", UpdateCommand)
+	router.PUT("/commands/:org/:repo/:commandId", UpdateCommand)
 	router.DELETE("/commands/:org/:repo/:commandId", DeleteCommand)
 
 	// Run the router
@@ -115,6 +115,9 @@ func CreateCommand(c *gin.Context) {
 		panic(msg)
 	}
 
+	// add id to newCommand
+	newCommand.Id = id
+
 	// Check all required inputs
 	if newCommand.Organization == "" || newCommand.Repository == "" || newCommand.Name == "" || newCommand.Data == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "organization, repository, name, and data are required"})
@@ -122,7 +125,7 @@ func CreateCommand(c *gin.Context) {
 	}
 
 	query := `INSERT INTO commands (id, organization, repository, name, data) VALUES (?, ?, ?, ?, ?)`
-	res, err := db.Exec(query, id, newCommand.Organization, newCommand.Repository, newCommand.Name, newCommand.Data)
+	res, err := db.Exec(query, newCommand.Id, newCommand.Organization, newCommand.Repository, newCommand.Name, newCommand.Data)
 	if err != nil {
 		msg, _ := fmt.Printf("(CreateCommand) db.Exec %s", err)
 		panic(msg)
@@ -146,14 +149,36 @@ func UpdateCommand(c *gin.Context) {
 		panic(msg)
 	}
 
+	org := c.Param("org")
+	org = strings.ReplaceAll(org, "/", "")
+	repo := c.Param("repo")
+	repo = strings.ReplaceAll(repo, "/", "")
 	commandId := c.Param("commandId")
 	commandId = strings.ReplaceAll(commandId, "/", "")
 
-	query := `UPDATE commands SET name = ?, repository = ? WHERE id = ?`
-	_, err = db.Exec(query, updates.Name, updates.Repository, commandId)
+	// check all required inputs
+	if updates.Name == "" || updates.Data == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "name and data are required"})
+		return
+	}
+
+	query := `UPDATE commands SET name = ?, data = ? WHERE id = ? AND organization = ? AND repository = ?`
+	result, err := db.Exec(query, updates.Name, updates.Data, commandId, org, repo)
 	if err != nil {
 		msg, _ := fmt.Printf("(UpdateCommand) db.Exec %s", err)
 		panic(msg)
+	}
+
+	// if no rows were affected, return an error
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		msg, _ := fmt.Printf("(DeleteCommand) result.RowsAffected %s", err)
+		panic(msg)
+	}
+
+	if rowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "command not found"})
+		return
 	}
 
 	c.Status(http.StatusOK)
