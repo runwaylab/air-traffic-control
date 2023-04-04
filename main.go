@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -22,6 +23,16 @@ type Command struct {
 	Repository   string
 	Name         string
 	Data         string
+	Created_at   string
+	Updated_at   string
+}
+
+type CommandResponse struct {
+	Id           string
+	Organization string
+	Repository   string
+	Name         string
+	Data         map[string]interface{}
 	Created_at   string
 	Updated_at   string
 }
@@ -72,15 +83,33 @@ func GetRepoCommands(c *gin.Context) {
 		panic(msg)
 	}
 
-	commands := []Command{}
+	commands := []CommandResponse{}
 	for res.Next() {
+		var commandResponse CommandResponse
 		var command Command
 		err := res.Scan(&command.Id, &command.Organization, &command.Repository, &command.Name, &command.Data, &command.Created_at, &command.Updated_at)
 		if err != nil {
 			msg, _ := fmt.Printf("(GetCommands) res.Scan %s", err)
 			panic(msg)
 		}
-		commands = append(commands, command)
+
+		// ensure the data is valid json before appending
+		var data map[string]interface{}
+		err = json.Unmarshal([]byte(command.Data), &data)
+		if err != nil {
+			msg, _ := fmt.Printf("(GetCommands) json.Unmarshal %s", err)
+			panic(msg)
+		}
+
+		commandResponse.Id = command.Id
+		commandResponse.Organization = command.Organization
+		commandResponse.Repository = command.Repository
+		commandResponse.Name = command.Name
+		commandResponse.Created_at = command.Created_at
+		commandResponse.Updated_at = command.Updated_at
+		commandResponse.Data = data
+
+		commands = append(commands, commandResponse)
 	}
 
 	c.JSON(http.StatusOK, commands)
