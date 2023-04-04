@@ -115,8 +115,14 @@ func CreateCommand(c *gin.Context) {
 		panic(msg)
 	}
 
-	query := `INSERT INTO commands (id, organization, repository, name) VALUES (?, ?, ?, ?)`
-	res, err := db.Exec(query, id, newCommand.Organization, newCommand.Repository, newCommand.Name)
+	// Check all required inputs
+	if newCommand.Organization == "" || newCommand.Repository == "" || newCommand.Name == "" || newCommand.Data == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "organization, repository, name, and data are required"})
+		return
+	}
+
+	query := `INSERT INTO commands (id, organization, repository, name, data) VALUES (?, ?, ?, ?, ?)`
+	res, err := db.Exec(query, id, newCommand.Organization, newCommand.Repository, newCommand.Name, newCommand.Data)
 	if err != nil {
 		msg, _ := fmt.Printf("(CreateCommand) db.Exec %s", err)
 		panic(msg)
