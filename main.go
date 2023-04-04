@@ -39,8 +39,8 @@ func main() {
 
 	// Build router & define routes
 	router := gin.Default()
-	router.GET("/commands", GetCommands)
-	router.GET("/commands/:commandId", GetSingleCommand)
+	router.GET("/commands/:org/:repo", GetRepoCommands)
+	router.GET("/commands/:org/:repo/:commandId", GetSingleCommand)
 	router.POST("/commands", CreateCommand)
 	router.PUT("/commands/:commandId", UpdateCommand)
 	router.DELETE("/commands/:commandId", DeleteCommand)
@@ -49,9 +49,14 @@ func main() {
 	router.Run()
 }
 
-func GetCommands(c *gin.Context) {
-	query := "SELECT * FROM commands"
-	res, err := db.Query(query)
+func GetRepoCommands(c *gin.Context) {
+	org := c.Param("org")
+	org = strings.ReplaceAll(org, "/", "")
+	repo := c.Param("repo")
+	repo = strings.ReplaceAll(repo, "/", "")
+
+	query := `SELECT * FROM commands WHERE organization = ? AND repository = ?`
+	res, err := db.Query(query, org, repo)
 	defer res.Close()
 	if err != nil {
 		log.Fatal("(GetCommands) db.Query", err)
@@ -71,12 +76,16 @@ func GetCommands(c *gin.Context) {
 }
 
 func GetSingleCommand(c *gin.Context) {
+	org := c.Param("org")
+	org = strings.ReplaceAll(org, "/", "")
+	repo := c.Param("repo")
+	repo = strings.ReplaceAll(repo, "/", "")
 	commandId := c.Param("commandId")
 	commandId = strings.ReplaceAll(commandId, "/", "")
 
 	var command Command
-	query := `SELECT * FROM commands WHERE id = ?`
-	err := db.QueryRow(query, commandId).Scan(&command.Id, &command.Organization, &command.Repository, &command.Name, &command.Data, &command.Created_at, &command.Updated_at)
+	query := `SELECT * FROM commands WHERE id = ? AND organization = ? AND repository = ?`
+	err := db.QueryRow(query, commandId, org, repo).Scan(&command.Id, &command.Organization, &command.Repository, &command.Name, &command.Data, &command.Created_at, &command.Updated_at)
 	if err != nil {
 		log.Fatal("(GetSingleCommand) db.Exec", err)
 	}
