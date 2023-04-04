@@ -9,6 +9,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/runwayapp/air-traffic-control/internal/middlewares"
+
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
@@ -59,11 +61,14 @@ func main() {
 	// Recovery middleware recovers from any panics and writes a 500 if there was one.
 	router.Use(gin.Recovery())
 
-	router.GET("/:org/:repo/commands", GetRepoCommands)
-	router.GET("/:org/:repo/commands/:commandId", GetSingleCommand)
-	router.POST("/:org/:repo/commands", CreateCommand)
-	router.PUT("/:org/:repo/commands/:commandId", UpdateCommand)
-	router.DELETE("/:org/:repo/commands/:commandId", DeleteCommand)
+	protected := router.Group("/")
+	protected.Use(middlewares.JwtAuthMiddleware())
+
+	protected.GET("/:org/:repo/commands", GetRepoCommands)
+	protected.GET("/:org/:repo/commands/:commandId", GetSingleCommand)
+	protected.POST("/:org/:repo/commands", CreateCommand)
+	protected.PUT("/:org/:repo/commands/:commandId", UpdateCommand)
+	protected.DELETE("/:org/:repo/commands/:commandId", DeleteCommand)
 
 	// Run the router
 	router.Run()
