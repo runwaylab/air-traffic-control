@@ -15,10 +15,14 @@ import (
 
 var db *sql.DB
 
-type Product struct {
-	Id    int64
-	Name  string
-	Price int
+type Command struct {
+	id           string
+	organization string
+	repository   string
+	name         string
+	data         string
+	created_at   string
+	updated_at   string
 }
 
 func main() {
@@ -36,110 +40,105 @@ func main() {
 
 	// Build router & define routes
 	router := gin.Default()
-	router.GET("/products", GetProducts)
-	router.GET("/products/:productId", GetSingleProduct)
-	router.POST("/products", CreateProduct)
-	router.PUT("/products/:productId", UpdateProduct)
-	router.DELETE("/products/:productId", DeleteProduct)
+	router.GET("/commands", GetCommands)
+	router.GET("/commands/:commandId", GetSingleCommand)
+	router.POST("/commands", CreateCommand)
+	router.PUT("/commands/:commandId", UpdateCommand)
+	router.DELETE("/commands/:commandId", DeleteCommand)
 
 	// Run the router
 	router.Run()
 }
 
-func GetProducts(c *gin.Context) {
-	query := "SELECT * FROM products"
+func GetCommands(c *gin.Context) {
+	query := "SELECT * FROM commands"
 	res, err := db.Query(query)
 	defer res.Close()
 	if err != nil {
-		log.Fatal("(GetProducts) db.Query", err)
+		log.Fatal("(GetCommands) db.Query", err)
 	}
 
-	products := []Product{}
+	commands := []Command{}
 	for res.Next() {
-		var product Product
-		err := res.Scan(&product.Id, &product.Name, &product.Price)
+		var command Command
+		err := res.Scan(&command.id, &command.organization, &command.repository, &command.name)
 		if err != nil {
-			log.Fatal("(GetProducts) res.Scan", err)
+			log.Fatal("(GetCommands) res.Scan", err)
 		}
-		products = append(products, product)
+		commands = append(commands, command)
 	}
 
-	c.JSON(http.StatusOK, products)
+	c.JSON(http.StatusOK, commands)
 }
 
-func GetSingleProduct(c *gin.Context) {
+func GetSingleCommand(c *gin.Context) {
 	productId := c.Param("productId")
 	productId = strings.ReplaceAll(productId, "/", "")
 	productIdInt, err := strconv.Atoi(productId)
 	if err != nil {
-		log.Fatal("(GetSingleProduct) strconv.Atoi", err)
+		log.Fatal("(GetSingleCommand) strconv.Atoi", err)
 	}
 
-	var product Product
-	query := `SELECT * FROM products WHERE id = ?`
-	err = db.QueryRow(query, productIdInt).Scan(&product.Id, &product.Name, &product.Price)
+	var command Command
+	query := `SELECT * FROM commands WHERE id = ?`
+	err = db.QueryRow(query, productIdInt).Scan(&command.id, &command.organization, &command.repository, &command.name)
 	if err != nil {
-		log.Fatal("(GetSingleProduct) db.Exec", err)
+		log.Fatal("(GetSingleCommand) db.Exec", err)
 	}
 
-	c.JSON(http.StatusOK, product)
+	c.JSON(http.StatusOK, command)
 }
 
-func CreateProduct(c *gin.Context) {
-	var newProduct Product
-	err := c.BindJSON(&newProduct)
+func CreateCommand(c *gin.Context) {
+	var newCommand Command
+	err := c.BindJSON(&newCommand)
 	if err != nil {
-		log.Fatal("(CreateProduct) c.BindJSON", err)
+		log.Fatal("(CreateCommand) c.BindJSON", err)
 	}
 
-	query := `INSERT INTO products (name, price) VALUES (?, ?)`
-	res, err := db.Exec(query, newProduct.Name, newProduct.Price)
+	query := `INSERT INTO commands (id, organization, repository, name) VALUES (?, ?, ?, ?)`
+	res, err := db.Exec(query, newCommand.id, newCommand.organization, newCommand.repository, newCommand.name)
 	if err != nil {
-		log.Fatal("(CreateProduct) db.Exec", err)
-	}
-	newProduct.Id, err = res.LastInsertId()
-	if err != nil {
-		log.Fatal("(CreateProduct) res.LastInsertId", err)
+		log.Fatal("(CreateCommand) db.Exec", err)
 	}
 
-	c.JSON(http.StatusOK, newProduct)
+	_, err = res.LastInsertId()
+
+	if err != nil {
+		log.Fatal("(CreateCommand) res.LastInsertId", err)
+	}
+
+	c.JSON(http.StatusOK, newCommand)
 }
 
-func UpdateProduct(c *gin.Context) {
-	var updates Product
+func UpdateCommand(c *gin.Context) {
+	var updates Command
 	err := c.BindJSON(&updates)
 	if err != nil {
-		log.Fatal("(UpdateProduct) c.BindJSON", err)
+		log.Fatal("(UpdateCommand) c.BindJSON", err)
 	}
 
-	productId := c.Param("productId")
-	productId = strings.ReplaceAll(productId, "/", "")
-	productIdInt, err := strconv.Atoi(productId)
-	if err != nil {
-		log.Fatal("(UpdateProduct) strconv.Atoi", err)
-	}
+	commandId := c.Param("commandId")
+	commandId = strings.ReplaceAll(commandId, "/", "")
 
-	query := `UPDATE products SET name = ?, price = ? WHERE id = ?`
-	_, err = db.Exec(query, updates.Name, updates.Price, productIdInt)
+	query := `UPDATE commands SET name = ?, repository = ? WHERE id = ?`
+	_, err = db.Exec(query, updates.name, updates.repository, commandId)
 	if err != nil {
-		log.Fatal("(UpdateProduct) db.Exec", err)
+		log.Fatal("(UpdateCommand) db.Exec", err)
 	}
 
 	c.Status(http.StatusOK)
 }
 
-func DeleteProduct(c *gin.Context) {
-	productId := c.Param("productId")
+func DeleteCommand(c *gin.Context) {
+	commandId := c.Param("commandId")
 
-	productId = strings.ReplaceAll(productId, "/", "")
-	productIdInt, err := strconv.Atoi(productId)
+	commandId = strings.ReplaceAll(commandId, "/", "")
+
+	query := `DELETE FROM commands WHERE id = ?`
+	_, err := db.Exec(query, commandId)
 	if err != nil {
-		log.Fatal("(DeleteProduct) strconv.Atoi", err)
-	}
-	query := `DELETE FROM products WHERE id = ?`
-	_, err = db.Exec(query, productIdInt)
-	if err != nil {
-		log.Fatal("(DeleteProduct) db.Exec", err)
+		log.Fatal("(DeleteCommand) db.Exec", err)
 	}
 
 	c.Status(http.StatusOK)
