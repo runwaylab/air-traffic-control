@@ -74,8 +74,9 @@ func main() {
 	protected.PUT("/:org/:repo/commands/:commandId", UpdateCommand)
 	protected.DELETE("/:org/:repo/commands/:commandId", DeleteCommand)
 
-	unprotected := router.Group("/")
-	unprotected.POST("/auth", Auth)
+	apiKeyProtection := router.Group("/")
+	apiKeyProtection.Use(middlewares.ApiKeyAuthMiddleware())
+	apiKeyProtection.POST("/auth", Auth)
 
 	// Run the router
 	router.Run()
