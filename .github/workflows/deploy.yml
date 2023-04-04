@@ -22,19 +22,20 @@ jobs:
           version=$(cat .go-version)
           echo "version=${version}" >> $GITHUB_OUTPUT
 
-      - name: Setup Go
+      - name: setup go
         uses: actions/setup-go@v4
         with:
           go-version: ${{ steps.go-version.outputs.version }}
 
       - name: go build
         run: |
-          mkdir -p bin
+          mkdir -p build
           go build
-          mv ${{ env.APP_NAME }} bin
+          mv ${{ env.APP_NAME }} build
 
       - name: deploy
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.APP_NAME }}
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+          package: build/
