@@ -47,7 +47,7 @@ type AuthRequest struct {
 func main() {
 	var err error
 	// Load in the `.env` file in development
-	if os.Getenv("ENV") != "production" {
+	if os.Getenv("ENV") == "development" {
 		err = godotenv.Load()
 		if err != nil {
 			log.Fatal("failed to load env", err)
