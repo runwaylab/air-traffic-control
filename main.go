@@ -72,7 +72,7 @@ func main() {
 	// Recovery middleware recovers from any panics and writes a 500 if there was one.
 	router.Use(gin.Recovery())
 
-	protected := router.Group("/")
+	protected := router.Group("/api/v1")
 	protected.Use(middlewares.JwtAuthMiddleware())
 	protected.GET("/:org/:repo/commands", GetRepoCommands)
 	protected.GET("/:org/:repo/commands/:commandId", GetSingleCommand)
@@ -80,7 +80,7 @@ func main() {
 	protected.PUT("/:org/:repo/commands/:commandId", UpdateCommand)
 	protected.DELETE("/:org/:repo/commands/:commandId", DeleteCommand)
 
-	apiKeyProtection := router.Group("/")
+	apiKeyProtection := router.Group("/api/v1")
 	apiKeyProtection.Use(middlewares.ApiKeyAuthMiddleware())
 	apiKeyProtection.POST("/auth", Auth)
 
