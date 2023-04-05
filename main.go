@@ -46,13 +46,21 @@ type AuthRequest struct {
 
 func main() {
 	var err error
-	// Load in the `.env` file in development
-	if os.Getenv("ENV") == "development" {
+
+	// log env on startup just incase
+	if os.Getenv("ENV") != "" {
+		log.Printf("ENV Detected on Startup: %s", os.Getenv("ENV"))
+	}
+
+	// Load in the `.env` file only in development
+	if os.Getenv("ENV") != "production" {
 		err = godotenv.Load()
 		if err != nil {
 			log.Fatal("failed to load env", err)
 		}
 	}
+
+	log.Printf("ENV: %s", os.Getenv("ENV"))
 
 	// Open a connection to the database
 	db, err = sql.Open("mysql", os.Getenv("DSN"))
@@ -60,13 +68,19 @@ func main() {
 		log.Fatal("failed to open db connection", err)
 	}
 
+	if err := db.Ping(); err != nil {
+		log.Printf("ERROR: failed to ping / connect to database: %v", err)
+	}
+
+	log.Println("successfully connected to database")
+
 	// Build router & define routes
 	router := gin.Default()
 
 	// Recovery middleware recovers from any panics and writes a 500 if there was one.
 	router.Use(gin.Recovery())
 
-	protected := router.Group("/")
+	protected := router.Group("/api/v1")
 	protected.Use(middlewares.JwtAuthMiddleware())
 	protected.GET("/:org/:repo/commands", GetRepoCommands)
 	protected.GET("/:org/:repo/commands/:commandId", GetSingleCommand)
@@ -74,7 +88,7 @@ func main() {
 	protected.PUT("/:org/:repo/commands/:commandId", UpdateCommand)
 	protected.DELETE("/:org/:repo/commands/:commandId", DeleteCommand)
 
-	apiKeyProtection := router.Group("/")
+	apiKeyProtection := router.Group("/api/v1")
 	apiKeyProtection.Use(middlewares.ApiKeyAuthMiddleware())
 	apiKeyProtection.POST("/auth", Auth)
 
