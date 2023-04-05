@@ -46,6 +46,12 @@ type AuthRequest struct {
 
 func main() {
 	var err error
+
+	// log env on startup just incase
+	if os.Getenv("ENV") != "" {
+		log.Printf("ENV Detected on Startup: %s", os.Getenv("ENV"))
+	}
+
 	// Load in the `.env` file only in development
 	if os.Getenv("ENV") != "production" {
 		err = godotenv.Load()
@@ -53,6 +59,8 @@ func main() {
 			log.Fatal("failed to load env", err)
 		}
 	}
+
+	log.Printf("ENV: %s", os.Getenv("ENV"))
 
 	// Open a connection to the database
 	db, err = sql.Open("mysql", os.Getenv("DSN"))
