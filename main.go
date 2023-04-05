@@ -60,6 +60,12 @@ func main() {
 		log.Fatal("failed to open db connection", err)
 	}
 
+	if err := db.Ping(); err != nil {
+		log.Printf("ERROR: failed to ping / connect to database: %v", err)
+	}
+
+	log.Println("successfully connected to database")
+
 	// Build router & define routes
 	router := gin.Default()
 
