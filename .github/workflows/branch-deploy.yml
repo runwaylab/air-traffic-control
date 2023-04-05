@@ -38,6 +38,7 @@ jobs:
       deployment_id: ${{ steps.branch-deploy.outputs.deployment_id }}
       environment: ${{ steps.branch-deploy.outputs.environment }}
       ref: ${{ steps.branch-deploy.outputs.ref }}
+      sha: ${{ steps.branch-deploy.outputs.sha }}
       comment_id: ${{ steps.branch-deploy.outputs.comment_id }}
       initial_reaction_id: ${{ steps.branch-deploy.outputs.initial_reaction_id }}
       actor_handle: ${{ steps.branch-deploy.outputs.actor_handle }}
@@ -79,7 +80,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: ghcr.io/${{ github.repository }}:${{ needs.trigger.outputs.ref }}
+          tags: ghcr.io/${{ github.repository }}:${{ needs.trigger.outputs.sha }}
           file: ./Dockerfile
 
   deploy:
@@ -97,7 +98,7 @@ jobs:
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AzureAppService_PublishProfile_5b07cbaf20a04a46a747e87ce0a42345 }}
-          images: "ghcr.io/${{ github.repository }}:${{ needs.trigger.outputs.ref }}"
+          images: "ghcr.io/${{ github.repository }}:${{ needs.trigger.outputs.sha }}"
 
   # update the deployment result - manually complete the deployment that was created by the branch-deploy action
   result:
