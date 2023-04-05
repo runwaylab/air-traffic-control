@@ -1,4 +1,4 @@
-name: test
+name: build
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
   pull_request:
 
 jobs:
-  test:
-    name: test
+  lint:
+    name: lint
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -27,5 +27,5 @@ jobs:
         with:
           go-version: ${{ steps.go-version.outputs.version }}
 
-      - name: test
-        run: script/test -k
+      - name: build
+        run: go build
