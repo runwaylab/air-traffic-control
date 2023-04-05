@@ -1,0 +1,10 @@
+.github/
+fixtures/
+script/
+.env
+.gitignore
+example.env
+get.http
+LICENSE
+README.md
+tests.http
