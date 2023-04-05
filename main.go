@@ -87,7 +87,7 @@ func main() {
 
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": "air-traffic-control",
+			"message": "air-traffic-control application",
 		})
 	})
 

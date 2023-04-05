@@ -7,8 +7,8 @@ on:
   pull_request:
 
 jobs:
-  lint:
-    name: lint
+  build:
+    name: build
     runs-on: ubuntu-latest
     permissions:
       contents: read

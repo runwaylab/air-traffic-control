@@ -1,7 +1,6 @@
 # https://docs.github.com/en/actions/deployment/deploying-to-your-cloud-provider/deploying-to-azure/deploying-docker-to-azure-app-service
 # Note: github.repository must be all lowercase
 
-
 name: branch deploy
 
 # The workflow to execute on is comments that are newly created
@@ -15,7 +14,6 @@ permissions:
   deployments: write
   contents: write
   checks: read
-  pages: write
   id-token: write
   packages: write
 
@@ -54,9 +52,8 @@ jobs:
           production_environment: "production"
           environment_targets: "production"
           skip_completing: "true" # we will complete the deployment manually in the 'result' job
-          admins: "GrantBirki" # <--- add your GitHub username here (if you want to use the admins feature)
+          admins: "GrantBirki"
 
-  # build the github-pages site with hugo
   build:
     needs: trigger
     if: ${{ needs.trigger.outputs.continue == 'true' }} # only run if the trigger job set continue to true
