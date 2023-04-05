@@ -1,7 +1,6 @@
 # https://docs.github.com/en/actions/deployment/deploying-to-your-cloud-provider/deploying-to-azure/deploying-docker-to-azure-app-service
 # Note: github.repository must be all lowercase
 
-
 name: branch deploy
 
 # The workflow to execute on is comments that are newly created
