@@ -35,7 +35,7 @@ INSERT INTO commands(id, organization, repository, name, data) VALUES
 # the users table
 CREATE TABLE users (
     login VARCHAR(255) NOT NULL PRIMARY KEY,
-    runwaytoken JSON,
+    email VARCHAR(255) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
