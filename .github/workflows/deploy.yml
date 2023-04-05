@@ -1,4 +1,5 @@
 # https://docs.github.com/en/actions/deployment/deploying-to-your-cloud-provider/deploying-to-azure/deploying-docker-to-azure-app-service
+# Note: github.repository must be all lowercase
 
 name: deploy
 
@@ -35,7 +36,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: ghcr.io/${GITHUB_REPOSITORY}:${{ github.sha }}
+          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
           file: ./Dockerfile
 
   deploy:
@@ -52,4 +53,4 @@ jobs:
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AzureAppService_PublishProfile_5b07cbaf20a04a46a747e87ce0a42345 }}
-          images: "ghcr.io/${GITHUB_REPOSITORY}:${{ github.sha }}"
+          images: "ghcr.io/${{ github.repository }}:${{ github.sha }}"
