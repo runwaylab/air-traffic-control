@@ -15,6 +15,7 @@ permissions:
   contents: write
   checks: read
   id-token: write
+  packages: write
 
 env:
   AZURE_WEBAPP_NAME: air-traffic-control
