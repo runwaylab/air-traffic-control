@@ -11,8 +11,8 @@ on:
       - main
 
 permissions:
-  contents: "read"
-  packages: "write"
+  contents: read
+  packages: write
 
 jobs:
   build:
@@ -21,24 +21,21 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
+      - name: setup docker buildx
         uses: docker/setup-buildx-action@v1
 
-      - name: Log in to GitHub container registry
-        uses: docker/login-action@v1.10.0
+      - name: ghcr.io login
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Lowercase the repo name
-        run: echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
-
-      - name: Build and push container image to registry
-        uses: docker/build-push-action@v2
+      - name: build and push
+        uses: docker/build-push-action@v4
         with:
           push: true
-          tags: ghcr.io/${{ env.REPO }}:${{ github.sha }}
+          tags: ghcr.io/${GITHUB_REPOSITORY}:${{ github.sha }}
           file: ./Dockerfile
 
   deploy:
@@ -47,17 +44,14 @@ jobs:
     needs: build
 
     environment:
-      name: "production"
+      name: production
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-      - name: Lowercase the repo name
-        run: echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
-
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
-        uses: azure/webapps-deploy@0b651ed7546ecfc75024011f76944cb9b381ef1e
+        uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AzureAppService_PublishProfile_5b07cbaf20a04a46a747e87ce0a42345 }}
-          images: "ghcr.io/${{ env.REPO }}:${{ github.sha }}"
+          images: "ghcr.io/${GITHUB_REPOSITORY}:${{ github.sha }}"
