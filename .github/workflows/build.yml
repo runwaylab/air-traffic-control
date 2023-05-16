@@ -23,7 +23,7 @@ jobs:
           version=$(cat .go-version)
           echo "version=${version}" >> $GITHUB_OUTPUT
 
-      - uses: actions/setup-go@v4.0.0
+      - uses: actions/setup-go@v4.0.1
         with:
           go-version: ${{ steps.go-version.outputs.version }}
 
